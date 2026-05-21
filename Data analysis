@@ -1,0 +1,35 @@
+# Import pandas
+import pandas as pd
+
+# Load dataset
+df = pd.read_csv("student_scores.csv")
+
+# Create average_score column
+df['average_score'] = (
+    df['math_score'] +
+    df['science_score']
+) / 2
+
+print(df[['average_score']])
+
+# Top 5 students
+top_students = df.sort_values(
+    by='average_score',
+    ascending=False
+).head(5)
+
+print(top_students)
+
+# Correlation between attendance and marks
+correlation = df['attendance'].corr(
+    df['average_score']
+)
+
+print("Correlation:", correlation)
+
+# Group by gender
+gender_avg = df.groupby('gender')[
+    ['math_score', 'science_score', 'average_score']
+].mean()
+
+print(gender_avg)
