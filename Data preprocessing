@@ -1,19 +1,59 @@
-# Import pandas
+# Import libraries
 import pandas as pd
+import numpy as np
 
 # Load dataset
 df = pd.read_csv("student_scores.csv")
 
-# Display first 5 rows
-print(df.head())
+# Handle missing values
 
-# Check data types
-print(df.dtypes)
+# Numeric columns
+numeric_cols = df.select_dtypes(include=np.number).columns
 
-# Missing values count
-print(df.isnull().sum())
+for col in numeric_cols:
+    df[col].fillna(df[col].mean(), inplace=True)
 
-# Students with attendance below 70%
-low_attendance = df[df['attendance'] < 70]
+# Object columns
+object_cols = df.select_dtypes(include='object').columns
 
-print(low_attendance)
+for col in object_cols:
+    df[col].fillna(df[col].mode()[0], inplace=True)
+
+print("Missing values handled!")
+
+# Convert exam_date into datetime
+df['exam_date'] = pd.to_datetime(
+    df['exam_date'],
+    errors='coerce'
+)
+
+print(df['exam_date'])
+
+# Function to remove outliers
+def remove_outliers(dataframe, column):
+
+    Q1 = dataframe[column].quantile(0.25)
+    Q3 = dataframe[column].quantile(0.75)
+
+    IQR = Q3 - Q1
+
+    lower = Q1 - 1.5 * IQR
+    upper = Q3 + 1.5 * IQR
+
+    return dataframe[
+        (dataframe[column] >= lower) &
+        (dataframe[column] <= upper)
+    ]
+
+# Remove outliers
+df = remove_outliers(df, 'math_score')
+df = remove_outliers(df, 'science_score')
+
+print("Outliers removed!")
+
+# Remove duplicate rows
+print("Duplicate Rows:", df.duplicated().sum())
+
+df.drop_duplicates(inplace=True)
+
+print("Duplicates removed!")
